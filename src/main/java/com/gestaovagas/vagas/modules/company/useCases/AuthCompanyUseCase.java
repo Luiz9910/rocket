@@ -15,6 +15,8 @@ import javax.naming.AuthenticationException;
 import javax.swing.text.html.Option;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -42,7 +44,9 @@ public class AuthCompanyUseCase {
 
         return JWT.create().withIssuer("javagas")
                 .withExpiresAt(Instant.now().plus(Duration.ofHours(2)))
+                .withIssuer("javagas")
                 .withSubject(String.valueOf(company.getId()))
+                .withClaim("roles", List.of("company"))
                 .sign(algorithm);
     }
 }
