@@ -15,7 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 
-@Component // Adiciona a anotação de componente
+@Component
 public class SecurityFilter extends OncePerRequestFilter {
 
     @Override
@@ -23,31 +23,34 @@ public class SecurityFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        SecurityContextHolder.getContext().setAuthentication(null);
+//        SecurityContextHolder.getContext().setAuthentication(null);
         String header = request.getHeader("Authorization");
 
         String token = header != null ? header.replace("Bearer ", "") : null;
 
-        if (token != null) {
-            Algorithm algorithm = Algorithm.HMAC256("dmasuidmasifm");
+        if (request.getRequestURI().startsWith("/company")) {
+            if (token != null) {
+                Algorithm algorithm = Algorithm.HMAC256("dmasuidmasifm");
 
-            try {
-                String subjectToken = JWT.require(algorithm).build().verify(token).getSubject();
+                try {
+                    String subjectToken = JWT.require(algorithm).build().verify(token).getSubject();
 
-                if  (subjectToken != null && !subjectToken.isEmpty()) {
-                    request.setAttribute("company_id", subjectToken);
-                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(subjectToken, null, Collections.emptyList());
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-                } else {
+                    if  (subjectToken != null && !subjectToken.isEmpty()) {
+                        request.setAttribute("company_id", subjectToken);
+                        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(subjectToken, null, Collections.emptyList());
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                    } else {
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        return;
+                    }
+
+                } catch (JWTVerificationException ex) {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     return;
                 }
-
-            } catch (JWTVerificationException ex) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
             }
         }
+
         filterChain.doFilter(request, response);
     }
 }

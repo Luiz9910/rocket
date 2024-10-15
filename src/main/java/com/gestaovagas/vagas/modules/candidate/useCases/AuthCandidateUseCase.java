@@ -14,6 +14,7 @@ import javax.naming.AuthenticationException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.List;
 
 @Service
 public class AuthCandidateUseCase {
@@ -36,20 +37,18 @@ public class AuthCandidateUseCase {
             throw new AuthenticationException("");
         }
 
-        Algorithm algorithm = Algorithm.HMAC256("dmasuidmasifma");
+        Algorithm algorithm = Algorithm.HMAC256("dasdasdsa");
         var expiresIn = Instant.now().plus(Duration.ofHours(10));
         var token = JWT.create()
                 .withIssuer("javagas")
                 .withSubject(candidate.getId().toString())
                 .withExpiresAt(expiresIn)
-                .withClaim("roles", Arrays.asList("candidate"))
+                .withClaim("roles", List.of("CANDIDATE"))
                 .sign(algorithm);
 
-        var authCandidateResponse = AuthCandidateResponseDTO.builder()
+        return AuthCandidateResponseDTO.builder()
                 .acess_token(token)
                 .expires_in(expiresIn.toEpochMilli())
                 .build();
-
-        return authCandidateResponse;
     }
 }
